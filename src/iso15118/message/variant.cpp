@@ -29,6 +29,8 @@ static void handle_sap(VariantAccess& va) {
 
     if (doc.supportedAppProtocolReq_isUsed) {
         insert_type(va, doc.supportedAppProtocolReq);
+    } else if (doc.supportedAppProtocolRes_isUsed) {
+        insert_type(va, doc.supportedAppProtocolRes);
     } else {
         va.error = "chosen message type unhandled";
     }
@@ -62,6 +64,24 @@ static void handle_main(VariantAccess& va) {
         insert_type(va, doc.PowerDeliveryReq);
     } else if (doc.SessionStopReq_isUsed) {
         insert_type(va, doc.SessionStopReq);
+    } else if (doc.SessionSetupRes_isUsed) {
+        insert_type(va, doc.SessionSetupRes);
+    // } else if (doc.AuthorizationSetupRes_isUsed) {
+    //     insert_type(va, doc.AuthorizationSetupRes);
+    // } else if (doc.AuthorizationRes_isUsed) {
+    //     insert_type(va, doc.AuthorizationRes);
+    // } else if (doc.ServiceDiscoveryRes_isUsed) {
+    //     insert_type(va, doc.ServiceDiscoveryRes);
+    // } else if (doc.ServiceDetailRes_isUsed) {
+    //     insert_type(va, doc.ServiceDetailRes);
+    // } else if (doc.ServiceSelectionRes_isUsed) {
+    //     insert_type(va, doc.ServiceSelectionRes);
+    // } else if (doc.ScheduleExchangeRes_isUsed) {
+    //     insert_type(va, doc.ScheduleExchangeRes);
+    // } else if (doc.PowerDeliveryRes_isUsed) {
+    //     insert_type(va, doc.PowerDeliveryRes);
+    // } else if (doc.SessionStopRes_isUsed) {
+    //     insert_type(va, doc.SessionStopRes);
     } else {
         va.error = "chosen message type unhandled";
     }
@@ -87,6 +107,16 @@ static void handle_dc(VariantAccess& va) {
         insert_type(va, doc.DC_ChargeLoopReq);
     } else if (doc.DC_WeldingDetectionReq_isUsed) {
         insert_type(va, doc.DC_WeldingDetectionReq);
+    // } else if (doc.DC_ChargeParameterDiscoveryRes_isUsed) {
+    //     insert_type(va, doc.DC_ChargeParameterDiscoveryRes);
+    // } else if (doc.DC_CableCheckRes_isUsed) {
+    //     insert_type(va, doc.DC_CableCheckRes);
+    // } else if (doc.DC_PreChargeRes_isUsed) {
+    //     insert_type(va, doc.DC_PreChargeRes);
+    // } else if (doc.DC_ChargeLoopRes_isUsed) {
+    //     insert_type(va, doc.DC_ChargeLoopRes);
+    // } else if (doc.DC_WeldingDetectionRes_isUsed) {
+    //     insert_type(va, doc.DC_WeldingDetectionRes);
     } else {
         va.error = "chosen message type unhandled";
     }
@@ -106,6 +136,10 @@ static void handle_ac(VariantAccess& va) {
         insert_type(va, doc.AC_ChargeParameterDiscoveryReq);
     } else if (doc.AC_ChargeLoopReq_isUsed) {
         insert_type(va, doc.AC_ChargeLoopReq);
+    // } else if (doc.AC_ChargeParameterDiscoveryRes_isUsed) {
+    //     insert_type(va, doc.AC_ChargeParameterDiscoveryRes);
+    // } else if (doc.AC_ChargeLoopRes_isUsed) {
+    //     insert_type(va, doc.AC_ChargeLoopRes);
     } else {
         va.error = "chosen message type unhandled";
     }

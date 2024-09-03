@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <iostream>
 
-static std::function<void(std::string)> logging_callback = [](const std::string& msg) { std::cout << msg; };
+static std::function<void(std::string)> logging_callback = [](const std::string& msg) { std::cout << msg << std::endl; };
 
 namespace iso15118 {
 

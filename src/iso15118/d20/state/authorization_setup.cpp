@@ -62,7 +62,7 @@ FsmSimpleState::HandleEventReturnType AuthorizationSetup::handle_event(Allocator
         return sa.PASS_ON;
     }
 
-    const auto variant = ctx.get_request();
+    const auto variant = ctx.get_response();
 
     if (const auto req = variant->get_if<message_20::AuthorizationSetupRequest>()) {
         const auto res =
@@ -70,7 +70,7 @@ FsmSimpleState::HandleEventReturnType AuthorizationSetup::handle_event(Allocator
 
         logf("Timestamp: %d\n", req->header.timestamp);
 
-        ctx.respond(res);
+        // ctx.request(res);
 
         if (res.response_code >= message_20::ResponseCode::FAILED) {
             ctx.session_stopped = true;
@@ -84,7 +84,7 @@ FsmSimpleState::HandleEventReturnType AuthorizationSetup::handle_event(Allocator
     } else if (const auto req = variant->get_if<message_20::SessionStopRequest>()) {
         const auto res = handle_request(*req, ctx.session);
 
-        ctx.respond(res);
+        // ctx.request(res);
         ctx.session_stopped = true;
 
         return sa.PASS_ON;

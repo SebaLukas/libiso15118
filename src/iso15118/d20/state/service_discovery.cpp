@@ -87,7 +87,7 @@ FsmSimpleState::HandleEventReturnType ServiceDiscovery::handle_event(AllocatorTy
         return sa.PASS_ON;
     }
 
-    const auto variant = ctx.get_request();
+    const auto variant = ctx.get_response();
 
     if (const auto req = variant->get_if<message_20::ServiceDiscoveryRequest>()) {
         if (req->supported_service_ids) {
@@ -100,7 +100,7 @@ FsmSimpleState::HandleEventReturnType ServiceDiscovery::handle_event(AllocatorTy
         const auto res = handle_request(*req, ctx.session, ctx.config.supported_energy_transfer_services,
                                         ctx.config.supported_vas_services);
 
-        ctx.respond(res);
+        // ctx.request(res);
 
         if (res.response_code >= message_20::ResponseCode::FAILED) {
             ctx.session_stopped = true;
@@ -111,7 +111,7 @@ FsmSimpleState::HandleEventReturnType ServiceDiscovery::handle_event(AllocatorTy
     } else if (const auto req = variant->get_if<message_20::SessionStopRequest>()) {
         const auto res = handle_request(*req, ctx.session);
 
-        ctx.respond(res);
+        // ctx.request(res);
         ctx.session_stopped = true;
 
         return sa.PASS_ON;

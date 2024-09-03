@@ -22,6 +22,7 @@ struct Header {
 };
 
 template <typename cb_HeaderType> void convert(const cb_HeaderType& in, Header& out);
+template <typename cb_HeaderType> void convert(const Header& in, cb_HeaderType& out);
 
 enum class ResponseCode {
     OK = 0,

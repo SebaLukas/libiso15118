@@ -46,30 +46,25 @@ template <> void convert(const SupportedAppProtocolRequest& in, struct appHand_s
     }
 }
 
+template <> void convert(const struct appHand_supportedAppProtocolRes& in, SupportedAppProtocolResponse& out) {
+    cb_convert_enum(in.ResponseCode, out.response_code);
+    CB2CPP_ASSIGN_IF_USED(in.SchemaID, out.schema_id);
+}
+
 template <> void convert(const SupportedAppProtocolResponse& in, struct appHand_supportedAppProtocolRes& out) {
     init_appHand_supportedAppProtocolRes(&out);
 
     cb_convert_enum(in.response_code, out.ResponseCode);
 
-    if (in.schema_id) {
-        out.SchemaID = *in.schema_id;
-        CB_SET_USED(out.SchemaID);
-    }
+    CPP2CB_ASSIGN_IF_USED(in.schema_id, out.SchemaID);
 }
 
 template <> void insert_type(VariantAccess& va, const struct appHand_supportedAppProtocolReq& in) {
     va.insert_type<SupportedAppProtocolRequest>(in);
-};
+}
 
-template <> int serialize_to_exi(const SupportedAppProtocolResponse& in, exi_bitstream_t& out) {
-    appHand_exiDocument doc;
-    init_appHand_exiDocument(&doc);
-
-    convert(in, doc.supportedAppProtocolRes);
-
-    CB_SET_USED(doc.supportedAppProtocolRes);
-
-    return encode_appHand_exiDocument(&out, &doc);
+template <> void insert_type(VariantAccess& va, const struct appHand_supportedAppProtocolRes& in) {
+    va.insert_type<SupportedAppProtocolResponse>(in);
 }
 
 template <> int serialize_to_exi(const SupportedAppProtocolRequest& in, exi_bitstream_t& out) {
@@ -79,6 +74,17 @@ template <> int serialize_to_exi(const SupportedAppProtocolRequest& in, exi_bits
     convert(in, doc.supportedAppProtocolReq);
 
     CB_SET_USED(doc.supportedAppProtocolReq);
+
+    return encode_appHand_exiDocument(&out, &doc);
+}
+
+template <> int serialize_to_exi(const SupportedAppProtocolResponse& in, exi_bitstream_t& out) {
+    appHand_exiDocument doc;
+    init_appHand_exiDocument(&doc);
+
+    convert(in, doc.supportedAppProtocolRes);
+
+    CB_SET_USED(doc.supportedAppProtocolRes);
 
     return encode_appHand_exiDocument(&out, &doc);
 }

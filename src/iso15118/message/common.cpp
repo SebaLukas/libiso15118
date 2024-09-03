@@ -109,6 +109,11 @@ template <> void convert(const EvseStatus& in, iso20_EVSEStatusType& out) {
     cb_convert_enum(in.notification, out.EVSENotification);
 }
 
+template <> void convert(const struct iso20_EVSEStatusType& in, EvseStatus& out) {
+    out.notification_max_delay = in.NotificationMaxDelay;
+    cb_convert_enum(in.EVSENotification, out.notification);
+}
+
 float from_RationalNumber(const RationalNumber& in) {
     return in.value * pow(10, in.exponent);
 }

@@ -48,6 +48,10 @@ void convert(const iso20_channelSelectionType in, PowerDeliveryRequest::ChannelS
     cb_convert_enum(in, out);
 }
 
+void convert(const PowerDeliveryRequest::ChannelSelection& in, iso20_channelSelectionType& out) {
+    cb_convert_enum(in, out);
+}
+
 template <> void convert(const struct iso20_PowerDeliveryReqType& in, PowerDeliveryRequest& out) {
     convert(in.Header, out.header);
 
@@ -56,6 +60,18 @@ template <> void convert(const struct iso20_PowerDeliveryReqType& in, PowerDeliv
 
     CB2CPP_CONVERT_IF_USED(in.EVPowerProfile, out.power_profile);
     CB2CPP_CONVERT_IF_USED(in.BPT_ChannelSelection, out.channel_selection);
+}
+
+template <> void convert(const PowerDeliveryRequest& in, struct iso20_PowerDeliveryReqType& out) {
+    init_iso20_PowerDeliveryReqType(&out);
+
+    convert(in.header, out.Header);
+
+    cb_convert_enum(in.processing, out.EVProcessing);
+    cb_convert_enum(in.charge_progress, out.ChargeProgress);
+
+    // CPP2CB_CONVERT_IF_USED(in.power_profile, out.EVPowerProfile); // FIXME(sl)
+    CPP2CB_CONVERT_IF_USED(in.channel_selection, out.BPT_ChannelSelection);
 }
 
 template <> void convert(const PowerDeliveryResponse& in, iso20_PowerDeliveryResType& out) {
@@ -67,9 +83,21 @@ template <> void convert(const PowerDeliveryResponse& in, iso20_PowerDeliveryRes
     CPP2CB_CONVERT_IF_USED(in.status, out.EVSEStatus);
 }
 
+template <> void convert(const struct iso20_PowerDeliveryResType& in, PowerDeliveryResponse& out) {
+    convert(in.Header, out.header);
+
+    cb_convert_enum(in.ResponseCode, out.response_code);
+    
+    CB2CPP_CONVERT_IF_USED(in.EVSEStatus, out.status);
+}
+
 template <> void insert_type(VariantAccess& va, const struct iso20_PowerDeliveryReqType& in) {
     va.insert_type<PowerDeliveryRequest>(in);
 };
+
+template <> void insert_type(VariantAccess& va, const struct iso20_PowerDeliveryResType& in) {
+    va.insert_type<PowerDeliveryResponse>(in);
+}
 
 template <> int serialize_to_exi(const PowerDeliveryResponse& in, exi_bitstream_t& out) {
     iso20_exiDocument doc;
@@ -83,6 +111,21 @@ template <> int serialize_to_exi(const PowerDeliveryResponse& in, exi_bitstream_
 }
 
 template <> size_t serialize(const PowerDeliveryResponse& in, const io::StreamOutputView& out) {
+    return serialize_helper(in, out);
+}
+
+template <> int serialize_to_exi(const PowerDeliveryRequest& in, exi_bitstream_t& out) {
+    iso20_exiDocument doc;
+    init_iso20_exiDocument(&doc);
+
+    CB_SET_USED(doc.PowerDeliveryReq);
+
+    convert(in, doc.PowerDeliveryReq);
+
+    return encode_iso20_exiDocument(&out, &doc);
+}
+
+template <> size_t serialize(const PowerDeliveryRequest& in, const io::StreamOutputView& out) {
     return serialize_helper(in, out);
 }
 

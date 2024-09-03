@@ -36,6 +36,8 @@ public:
     TimePoint const& poll();
     void push_control_event(const d20::ControlEvent&);
 
+    void send_sap();
+
 private:
     std::unique_ptr<io::IConnection> connection;
     session::SessionLogger log;
@@ -45,10 +47,10 @@ private:
     io::SdpPacket packet;
 
     // output buffer
-    uint8_t response_buffer[1028];
+    uint8_t request_buffer[1028];
 
-    d20::MessageExchange message_exchange{{response_buffer + io::SdpPacket::V2GTP_HEADER_SIZE,
-                                           sizeof(response_buffer) - io::SdpPacket::V2GTP_HEADER_SIZE}};
+    d20::MessageExchange message_exchange{{request_buffer + io::SdpPacket::V2GTP_HEADER_SIZE,
+                                           sizeof(request_buffer) - io::SdpPacket::V2GTP_HEADER_SIZE}};
 
     // control event buffer
     d20::ControlEventQueue control_event_queue;

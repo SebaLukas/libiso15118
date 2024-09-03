@@ -8,6 +8,7 @@
 #include <endian.h>
 
 #include <iso15118/d20/state/supported_app_protocol.hpp>
+#include <iso15118/message/supported_app_protocol.hpp>
 
 #include <iso15118/detail/helper.hpp>
 
@@ -26,9 +27,9 @@ static void log_sdp_packet(const iso15118::io::SdpPacket& sdp) {
     iso15118::logf("[SDP Packet in]: Header: %04hx, Payload: %s", sdp.get_payload_type(), payload_string_buffer.get());
 }
 
-static void log_packet_from_car(const iso15118::io::SdpPacket& packet, session::SessionLogger& logger) {
+static void log_packet_from_charger(const iso15118::io::SdpPacket& packet, session::SessionLogger& logger) {
     logger.exi(static_cast<uint16_t>(packet.get_payload_type()), packet.get_payload_buffer(),
-               packet.get_payload_length(), session::logging::ExiMessageDirection::FROM_EV);
+               packet.get_payload_length(), session::logging::ExiMessageDirection::TO_EV);
 }
 
 static std::unique_ptr<message_20::Variant> make_variant_from_packet(const iso15118::io::SdpPacket& packet) {
@@ -102,7 +103,7 @@ bool read_single_sdp_packet(io::IConnection& connection, io::SdpPacket& sdp_pack
     return false;
 }
 
-static size_t setup_response_header(uint8_t* buffer, iso15118::io::v2gtp::PayloadType payload_type, size_t size) {
+static size_t setup_request_header(uint8_t* buffer, iso15118::io::v2gtp::PayloadType payload_type, size_t size) {
     buffer[0] = iso15118::io::SDP_PROTOCOL_VERSION;
     buffer[1] = iso15118::io::SDP_INVERSE_PROTOCOL_VERSION;
 
@@ -126,6 +127,7 @@ Session::Session(std::unique_ptr<io::IConnection> connection_, const d20::Sessio
 
     next_session_event = offset_time_point_by_ms(get_current_time_point(), SESSION_IDLE_TIMEOUT_MS);
     connection->set_event_callback([this](io::ConnectionEvent event) { this->handle_connection_event(event); });
+    state.connected = true; // Session will be only created if tcp connection is established
     fsm.reset<d20::state::SupportedAppProtocol>(ctx);
 }
 
@@ -162,29 +164,29 @@ TimePoint const& Session::poll() {
     // check for complete sdp packet
     if (packet.is_complete()) {
         // FIXME (aw): this event loop only acts on new packets, seems to be enough for now ...
-        log_packet_from_car(packet, log);
+        log_packet_from_charger(packet, log);
 
-        message_exchange.set_request(make_variant_from_packet(packet));
+        message_exchange.set_response(make_variant_from_packet(packet));
 
         packet = {}; // reset the packet
 
         const auto res = fsm.handle_event(d20::FsmEvent::V2GTP_MESSAGE);
     }
 
-    const auto [got_response, payload_size, payload_type] = message_exchange.check_and_clear_response();
+    const auto [got_request, payload_size, payload_type] = message_exchange.check_and_clear_request();
 
-    if (got_response) {
-        const auto response_size = setup_response_header(response_buffer, payload_type, payload_size);
-        connection->write(response_buffer, response_size);
+    if (got_request) {
+        const auto request_size = setup_request_header(request_buffer, payload_type, payload_size);
+        connection->write(request_buffer, request_size);
 
         // FIXME (aw): this is hacky ...
-        log.exi(static_cast<uint16_t>(payload_type), response_buffer + io::SdpPacket::V2GTP_HEADER_SIZE, payload_size,
-                session::logging::ExiMessageDirection::TO_EV);
+        log.exi(static_cast<uint16_t>(payload_type), request_buffer + io::SdpPacket::V2GTP_HEADER_SIZE, payload_size,
+                session::logging::ExiMessageDirection::FROM_EV);
 
         if (session_stopped) {
             connection->close();
             session_stopped = false; // reset
-            ctx.feedback.signal(session::feedback::Signal::DLINK_TERMINATE);
+            // ctx.feedback.signal(session::feedback::Signal::DLINK_TERMINATE);
         }
     }
 
@@ -197,9 +199,6 @@ void Session::handle_connection_event(io::ConnectionEvent event) {
     using Event = io::ConnectionEvent;
     switch (event) {
     case Event::ACCEPTED:
-        assert(state.connected == false);
-        state.connected = true;
-        log("Accepted connection on port %d", connection->get_public_endpoint().port);
         return;
 
     case Event::NEW_DATA:
@@ -208,8 +207,7 @@ void Session::handle_connection_event(io::ConnectionEvent event) {
         return;
 
     case Event::OPEN:
-        assert(state.connected);
-        // NOTE (aw): for now, we don't really need this information ...
+        state.connected = true;
         return;
 
     case Event::CLOSED:
@@ -217,6 +215,30 @@ void Session::handle_connection_event(io::ConnectionEvent event) {
         logf("Connection is closed\n");
         return;
     }
+}
+
+void Session::send_sap() {
+
+    // TODO(sl): Create req in a seperate function
+    message_20::SupportedAppProtocolRequest req;
+    auto& app_protocol = req.app_protocol.emplace_back();
+
+    app_protocol.version_number_major = 1;
+    app_protocol.version_number_minor = 0;
+    app_protocol.priority = 1;
+    app_protocol.schema_id = 1;
+    app_protocol.protocol_namespace = "urn:iso:std:iso:15118:-20:DC";
+
+    ctx.request(req);
+
+    const auto [got_request, payload_size, payload_type] = message_exchange.check_and_clear_request();
+
+    const auto request_size = setup_request_header(request_buffer, payload_type, payload_size);
+    connection->write(request_buffer, request_size);
+
+    // FIXME (aw): this is hacky ...
+    log.exi(static_cast<uint16_t>(payload_type), request_buffer + io::SdpPacket::V2GTP_HEADER_SIZE, payload_size,
+            session::logging::ExiMessageDirection::FROM_EV);
 }
 
 } // namespace iso15118

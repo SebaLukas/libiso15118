@@ -25,25 +25,25 @@ class MessageExchange {
 public:
     MessageExchange(io::StreamOutputView);
 
-    void set_request(std::unique_ptr<message_20::Variant> new_request);
-    std::unique_ptr<message_20::Variant> get_request();
+    void set_response(std::unique_ptr<message_20::Variant> new_response);
+    std::unique_ptr<message_20::Variant> get_response();
 
-    template <typename MessageType> void set_response(const MessageType& msg) {
-        response_size = message_20::serialize(msg, response);
-        response_available = true;
+    template <typename MessageType> void set_request(const MessageType& msg) {
+        request_size = message_20::serialize(msg, request);
+        request_available = true;
         payload_type = message_20::PayloadTypeTrait<MessageType>::type;
     }
 
-    std::tuple<bool, size_t, io::v2gtp::PayloadType> check_and_clear_response();
+    std::tuple<bool, size_t, io::v2gtp::PayloadType> check_and_clear_request();
 
 private:
     // input
-    std::unique_ptr<message_20::Variant> request{nullptr};
+    std::unique_ptr<message_20::Variant> response{nullptr};
 
     // output
-    const io::StreamOutputView response;
-    size_t response_size{0};
-    bool response_available{false};
+    const io::StreamOutputView request;
+    size_t request_size{0};
+    bool request_available{false};
     io::v2gtp::PayloadType payload_type;
 };
 
@@ -55,10 +55,10 @@ public:
     Context(MessageExchange&, const std::optional<ControlEvent>&, session::feedback::Callbacks, bool&,
             session::SessionLogger&, const d20::SessionConfig&);
 
-    std::unique_ptr<message_20::Variant> get_request();
+    std::unique_ptr<message_20::Variant> get_response();
 
-    template <typename MessageType> void respond(const MessageType& msg) {
-        message_exchange.set_response(msg);
+    template <typename MessageType> void request(const MessageType& msg) {
+        message_exchange.set_request(msg);
     }
 
     const auto& get_control_event() {

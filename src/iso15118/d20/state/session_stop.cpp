@@ -43,12 +43,12 @@ FsmSimpleState::HandleEventReturnType SessionStop::handle_event(AllocatorType& s
         return sa.PASS_ON;
     }
 
-    const auto variant = ctx.get_request();
+    const auto variant = ctx.get_response();
 
     if (const auto req = variant->get_if<message_20::SessionStopRequest>()) {
         const auto res = handle_request(*req, ctx.session);
 
-        ctx.respond(res);
+        // ctx.request(res);
 
         // Todo(sl): Tell the reason why the charger is stopping. Shutdown, Error, etc.
         ctx.session_stopped = true;

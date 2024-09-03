@@ -94,12 +94,12 @@ FsmSimpleState::HandleEventReturnType DC_ChargeLoop::handle_event(AllocatorType&
         return sa.PASS_ON;
     }
 
-    const auto variant = ctx.get_request();
+    const auto variant = ctx.get_response();
 
     if (const auto req = variant->get_if<message_20::PowerDeliveryRequest>()) {
         const auto res = handle_request(*req, ctx.session);
 
-        ctx.respond(res);
+        // ctx.request(res);
 
         if (res.response_code >= message_20::ResponseCode::FAILED) {
             ctx.session_stopped = true;
@@ -129,7 +129,7 @@ FsmSimpleState::HandleEventReturnType DC_ChargeLoop::handle_event(AllocatorType&
             ctx.feedback.dc_charge_target(charge_target.value());
         }
 
-        ctx.respond(res);
+        // ctx.request(res);
 
         if (res.response_code >= message_20::ResponseCode::FAILED) {
             ctx.session_stopped = true;

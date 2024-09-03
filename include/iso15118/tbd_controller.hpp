@@ -8,7 +8,8 @@
 #include "config.hpp"
 #include "d20/control_event.hpp"
 #include "io/poll_manager.hpp"
-#include "io/sdp_server.hpp"
+// #include "io/sdp_server.hpp"
+#include "io/sdp_client.hpp"
 #include "session/feedback.hpp"
 #include "session/iso.hpp"
 
@@ -26,7 +27,7 @@ class TbdController {
 public:
     TbdController(TbdConfig, session::feedback::Callbacks);
 
-    void loop();
+    void start_session();
 
     void send_control_event(const d20::ControlEvent&);
 
@@ -36,14 +37,14 @@ public:
 
 private:
     io::PollManager poll_manager;
-    io::SdpServer sdp_server;
+    io::SdpClient sdp_client;
 
     d20::SessionConfig session_config;
 
     std::list<Session> sessions;
 
     // callbacks for sdp server
-    void handle_sdp_server_input();
+    void handle_sdp_client_input();
 
     const TbdConfig config;
     const session::feedback::Callbacks callbacks;

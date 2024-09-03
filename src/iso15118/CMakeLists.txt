@@ -13,10 +13,12 @@ target_sources(iso15118
         misc/cb_exi.cpp
 
         io/connection_plain.cpp
+        io/connection_plain_client.cpp
         io/logging.cpp
         io/poll_manager.cpp
         io/sdp_packet.cpp
         io/sdp_server.cpp
+        io/sdp_client.cpp
         io/socket_helper.cpp
 
         session/feedback.cpp
@@ -31,20 +33,20 @@ target_sources(iso15118
         d20/config.cpp
 
         d20/state/supported_app_protocol.cpp
-        d20/state/session_setup.cpp
-        d20/state/authorization_setup.cpp
-        d20/state/authorization.cpp
-        d20/state/service_discovery.cpp
-        d20/state/service_detail.cpp
-        d20/state/service_selection.cpp
-        d20/state/dc_charge_parameter_discovery.cpp
-        d20/state/schedule_exchange.cpp
-        d20/state/dc_cable_check.cpp
-        d20/state/dc_pre_charge.cpp
-        d20/state/power_delivery.cpp
-        d20/state/dc_charge_loop.cpp
-        d20/state/dc_welding_detection.cpp
-        d20/state/session_stop.cpp
+        # d20/state/session_setup.cpp
+        # d20/state/authorization_setup.cpp
+        # d20/state/authorization.cpp
+        # d20/state/service_discovery.cpp
+        # d20/state/service_detail.cpp
+        # d20/state/service_selection.cpp
+        # d20/state/dc_charge_parameter_discovery.cpp
+        # d20/state/schedule_exchange.cpp
+        # d20/state/dc_cable_check.cpp
+        # d20/state/dc_pre_charge.cpp
+        # d20/state/power_delivery.cpp
+        # d20/state/dc_charge_loop.cpp
+        # d20/state/dc_welding_detection.cpp
+        # d20/state/session_stop.cpp
 
         message/variant.cpp
         message/supported_app_protocol.cpp
